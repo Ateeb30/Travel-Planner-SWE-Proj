@@ -146,6 +146,7 @@ class FinalTrip(BaseModel):
         table_name = 'final_trips'
 
 if __name__ == "__main__":
+    # Create tables
     db.create_tables([
         User, 
         Destination, 

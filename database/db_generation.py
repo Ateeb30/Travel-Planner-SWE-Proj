@@ -1,7 +1,7 @@
 from faker import Faker
 from database import (
     db, User, Destination, Trip, Food, Accommodation, 
-    Transport, Suggestion, FilteredSuggestion, Admin
+    Transport, Suggestion, FilteredSuggestion, Admin, FinalTrip
 )
 from datetime import datetime, timedelta
 import random
@@ -38,7 +38,7 @@ def generate_destinations(n=15):
     return destinations
 
 
-def generate_food(n=30):
+def generate_food(destinations, n=30):
     """Generate fake food/restaurant data"""
     cuisines = ['Italian', 'Chinese', 'Mexican', 'Japanese', 'Indian', 
                 'French', 'Thai', 'Mediterranean', 'Korean', 'Vietnamese']
@@ -47,14 +47,15 @@ def generate_food(n=30):
         food = Food.create(
             name=f"{random.choice(cuisines)} {fake.company()}"[:100],
             location=fake.address()[:200],
-            rating=round(random.uniform(3.0, 5.0), 1)
+            rating=round(random.uniform(3.0, 5.0), 1),
+            destination=random.choice(destinations)
         )
         foods.append(food)
     print(f"✅ Created {n} food entries")
     return foods
 
 
-def generate_accommodations(n=25):
+def generate_accommodations(destinations, n=25):
     """Generate fake accommodations"""
     types = [1, 2, 3, 4, 5]  # Hotel, Hostel, Apartment, Resort, B&B
     accommodations = []
@@ -62,7 +63,8 @@ def generate_accommodations(n=25):
         accommodation = Accommodation.create(
             name=f"{fake.company()} {random.choice(['Hotel', 'Inn', 'Lodge', 'Resort'])}"[:100],
             type=random.choice(types),
-            rating=round(random.uniform(3.0, 5.0), 1)
+            rating=round(random.uniform(3.0, 5.0), 1),
+            destination=random.choice(destinations)
         )
         accommodations.append(accommodation)
     print(f"✅ Created {n} accommodations")
@@ -107,22 +109,24 @@ def generate_trips(users, destinations, n=30):
     return trips
 
 
-def generate_suggestions(foods, transports, destinations, n=20):
+def generate_suggestions(trips, foods, transports, destinations, accommodations, n=20):
     """Generate fake suggestions"""
     suggestions = []
     for _ in range(n):
         suggestion = Suggestion.create(
+            trip=random.choice(trips),
             dailybudget=round(random.uniform(50, 300), 2),
             food=random.choice(foods),
             transport=random.choice(transports),
-            destination=random.choice(destinations)
+            destination=random.choice(destinations),
+            accommodation=random.choice(accommodations)
         )
         suggestions.append(suggestion)
     print(f"✅ Created {n} suggestions")
     return suggestions
 
 
-def generate_filtered_suggestions(foods, transports, destinations, n=15):
+def generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, n=15):
     """Generate fake filtered suggestions"""
     filtered = []
     for _ in range(n):
@@ -130,15 +134,41 @@ def generate_filtered_suggestions(foods, transports, destinations, n=15):
         duration = random.randint(3, 14)
         
         filtered_suggestion = FilteredSuggestion.create(
+            trip=random.choice(trips),
             totalbudget=round(daily * duration, 2),
             dailybudget=daily,
             food=random.choice(foods),
             transport=random.choice(transports),
-            destination=random.choice(destinations)
+            destination=random.choice(destinations),
+            accommodation=random.choice(accommodations)
         )
         filtered.append(filtered_suggestion)
     print(f"✅ Created {n} filtered suggestions")
     return filtered
+
+
+def generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, n=10):
+    """Generate fake final trips"""
+    final_trips = []
+    for _ in range(n):
+        filtered_sugg = random.choice(filtered_suggestions)
+        start_date = fake.date_between(start_date='-1y', end_date='+6m')
+        end_date = start_date + timedelta(days=random.randint(3, 21))
+        
+        final_trip = FinalTrip.create(
+            f_suggest=filtered_sugg,
+            destination=random.choice(destinations),
+            transport=random.choice(transports),
+            accommodation=random.choice(accommodations),
+            food=random.choice(foods),
+            user_id=random.choice(users),
+            totalbudget=round(random.uniform(1000, 5000), 2),
+            startDate=start_date,
+            endDate=end_date
+        )
+        final_trips.append(final_trip)
+    print(f"✅ Created {n} final trips")
+    return final_trips
 
 
 def generate_admins(n=3):
@@ -158,6 +188,7 @@ def generate_admins(n=3):
 def clear_all_data():
     """Clear all existing data from tables"""
     print("🗑️  Clearing existing data...")
+    FinalTrip.delete().execute()
     FilteredSuggestion.delete().execute()
     Suggestion.delete().execute()
     Trip.delete().execute()
@@ -167,31 +198,32 @@ def clear_all_data():
     Destination.delete().execute()
     User.delete().execute()
     Admin.delete().execute()
-    print(" All data cleared!")
+    print("✅ All data cleared!")
 
 
 if __name__ == "__main__":
     try:
         # Optional: Clear existing data first
-        # clear_all_data()
+        clear_all_data()
         
-        print("\n Starting data generation...\n")
+        print("\n🚀 Starting data generation...\n")
         
         # Generate data in order (respecting foreign key dependencies)
         users = generate_users(20)
         destinations = generate_destinations(15)
-        foods = generate_food(30)
-        accommodations = generate_accommodations(25)
+        foods = generate_food(destinations, 30)
+        accommodations = generate_accommodations(destinations, 25)
         transports = generate_transports(40)
         trips = generate_trips(users, destinations, 30)
-        suggestions = generate_suggestions(foods, transports, destinations, 20)
-        filtered_suggestions = generate_filtered_suggestions(foods, transports, destinations, 15)
+        suggestions = generate_suggestions(trips, foods, transports, destinations, accommodations, 20)
+        filtered_suggestions = generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, 15)
+        final_trips = generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, 10)
         admins = generate_admins(3)
         
-        print("\n All fake data generated successfully!")
+        print("\n🎉 All fake data generated successfully!")
         print(f"""
-        Summary:
-        --------
+        📊 Summary:
+        ──────────
         Users: {len(users)}
         Destinations: {len(destinations)}
         Food: {len(foods)}
@@ -200,12 +232,15 @@ if __name__ == "__main__":
         Trips: {len(trips)}
         Suggestions: {len(suggestions)}
         Filtered Suggestions: {len(filtered_suggestions)}
+        Final Trips: {len(final_trips)}
         Admins: {len(admins)}
         """)
         
     except Exception as e:
-        print(f"Error generating data: {e}")
+        print(f"❌ Error generating data: {e}")
+        import traceback
+        traceback.print_exc()
     
     finally:
         db.close()
-        print("Database connection closed.")
+        print("🔌 Database connection closed.")
