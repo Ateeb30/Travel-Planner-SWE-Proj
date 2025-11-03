@@ -67,7 +67,7 @@ class Food(BaseModel):
     name = CharField(max_length=100)
     location = CharField(max_length=200)
     rating = FloatField()
-    
+    destination = ForeignKeyField(Destination, backref='foods', on_delete='CASCADE')
     class Meta:
         table_name = 'food'
 
@@ -77,7 +77,7 @@ class Accommodation(BaseModel):
     name = CharField(max_length=100)
     type = IntegerField()  # Could be enum: hotel, hostel, apartment, etc.
     rating = FloatField()
-    
+    destination = ForeignKeyField(Destination, backref='foods', on_delete='CASCADE')
     class Meta:
         table_name = 'accommodations'
 
@@ -98,23 +98,25 @@ class Transport(BaseModel):
 
 class Suggestion(BaseModel):
     suggest_id = AutoField(primary_key=True)
+    trip = ForeignKeyField(Trip, backref='filtered_suggestions', on_delete='CASCADE')
     dailybudget = FloatField()
     food = ForeignKeyField(Food, backref='suggestions', on_delete='CASCADE')
     transport = ForeignKeyField(Transport, backref='suggestions', on_delete='CASCADE')
     destination = ForeignKeyField(Destination, backref='suggestions', on_delete='CASCADE')
-    
+    accommodation = ForeignKeyField(Accommodation, backref='suggestions', on_delete='CASCADE')
     class Meta:
         table_name = 'suggestions'
 
 
 class FilteredSuggestion(BaseModel):
     f_suggest_id = AutoField(primary_key=True)
+    trip = ForeignKeyField(Trip, backref='filtered_suggestions', on_delete='CASCADE')
     totalbudget = FloatField()
     dailybudget = FloatField()
     food = ForeignKeyField(Food, backref='filtered_suggestions', on_delete='CASCADE')
     transport = ForeignKeyField(Transport, backref='filtered_suggestions', on_delete='CASCADE')
     destination = ForeignKeyField(Destination, backref='filtered_suggestions', on_delete='CASCADE')
-    
+    accommodation = ForeignKeyField(Accommodation, backref='filtered_suggestions', on_delete='CASCADE')
     class Meta:
         table_name = 'filtered_suggestions'
 
@@ -128,8 +130,23 @@ class Admin(BaseModel):
     class Meta:
         table_name = 'admins'
 
+class FinalTrip(BaseModel):
+    f_trip_id = AutoField(primary_key=True)
+    f_suggest = ForeignKeyField(FilteredSuggestion, backref='final_trips', on_delete='CASCADE')
+    destination = ForeignKeyField(Destination, backref='final_trips', on_delete='CASCADE')
+    transport = ForeignKeyField(Transport, backref='final_trips', on_delete='CASCADE')
+    accommodation = ForeignKeyField(Accommodation, backref='final_trips', on_delete='CASCADE')
+    food = ForeignKeyField(Food, backref='final_trips', on_delete='CASCADE')
+    user_id = ForeignKeyField(User, backref='final_trips', on_delete='CASCADE')
+    totalbudget = FloatField()
+    startDate = DateField()
+    endDate = DateField()
+
+    class Meta:
+        table_name = 'final_trips'
 
 if __name__ == "__main__":
+    # Create tables
     db.create_tables([
         User, 
         Destination, 
@@ -139,7 +156,8 @@ if __name__ == "__main__":
         Transport, 
         Suggestion, 
         FilteredSuggestion, 
-        Admin
+        Admin,
+        FinalTrip
     ], safe=True)  
     print("All tables created successfully!")
     db.close()
