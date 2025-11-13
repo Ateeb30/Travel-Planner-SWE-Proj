@@ -1,8 +1,15 @@
-def finalizeTrip(userid, fsuggestid)
+# booking.py
+from database.database import User, FilteredSuggestion, FinalTrip, db
+
+def finalizeTrip(userid, fsuggestid):
+    """Finalize a trip from filtered suggestion"""
     try:
-        user=User.get(User.user_ID==userid)
-        fs=FilteredSuggestion.get(FilteredSuggestion.f_suggest_id==fsuggestid)
-        trip=fs.trip
+        if db.is_closed():
+            db.connect()
+            
+        user = User.get(User.user_id == userid)
+        fs = FilteredSuggestion.get(FilteredSuggestion.f_suggest_id == fsuggestid)
+        trip = fs.trip
 
         ftrip = FinalTrip.create(
             f_suggest=fs,
@@ -15,15 +22,15 @@ def finalizeTrip(userid, fsuggestid)
             startDate=trip.startDate,
             endDate=trip.endDate
         )
-        print(f"Trip finalize successfully! Trip ID: {ftrip.f_trip_id}")
+        print(f"✅ Trip finalized successfully! Trip ID: {ftrip.f_trip_id}")
         return ftrip    
 
     except User.DoesNotExist:
-        print(f"Error: User with ID {userid} not found")
+        print(f"❌ Error: User with ID {userid} not found")
         return None
     except FilteredSuggestion.DoesNotExist:
-        print(f"Error: FilteredSuggestion with ID {fsuggestid} not found")
+        print(f"❌ Error: FilteredSuggestion with ID {fsuggestid} not found")
         return None
     except Exception as e:
-        print(f"Error creating final trip: {e}")
+        print(f"❌ Error creating final trip: {e}")
         return None

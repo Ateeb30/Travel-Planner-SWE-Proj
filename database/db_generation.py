@@ -20,7 +20,7 @@ def generate_users(n=20):
             country=fake.country()
         )
         users.append(user)
-    print(f"✅ Created {n} users")
+    print(f"Created {n} users")
     return users
 
 

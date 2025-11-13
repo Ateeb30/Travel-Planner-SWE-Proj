@@ -1,3 +1,4 @@
+# database/database.py
 from peewee import (
     Model, CharField, AutoField, IntegerField, ForeignKeyField, DateField, FloatField, TimeField
 )
