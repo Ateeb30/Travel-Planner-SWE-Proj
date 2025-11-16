@@ -1,0 +1,19 @@
+services:
+  # Backend API
+  - type: web
+    name: travel-planner-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api_main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    
+  # Frontend
+  - type: web
+    name: travel-planner-frontend
+    env: static
+    buildCommand: cd travel-planner-frontend && npm install && npm run build
+    staticPublishPath: ./travel-planner-frontend/dist
