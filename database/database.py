@@ -5,24 +5,40 @@ from peewee import (
 from playhouse.pool import PooledPostgresqlDatabase
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 load_dotenv()
 
 try:
-    db = PooledPostgresqlDatabase(
-        os.getenv('DB_NAME', 'travel_planner_swe'),
-        user=os.getenv('DB_USER', 'postgres'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST', 'localhost'),
-        port=int(os.getenv('DB_PORT', 5432))
-    )
+    # Try to use DATABASE_URL first (for cloud), fallback to individual vars
+    database_url = os.getenv('DATABASE_URL')
+
+    if database_url:
+        # Parse the URL
+        parsed = urlparse(database_url)
+        db = PooledPostgresqlDatabase(
+            parsed.path[1:],  # database name (remove leading /)
+            user=parsed.username,
+            password=parsed.password,
+            host=parsed.hostname,
+            port=parsed.port or 5432
+        )
+    else:
+        # Fallback to old method
+        db = PooledPostgresqlDatabase(
+            os.getenv('DB_NAME', 'travel_planner_swe'),
+            user=os.getenv('DB_USER', 'postgres'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST', 'localhost'),
+            port=int(os.getenv('DB_PORT', 5432))
+        )
+    
     db.connect()
     print("Connected to PostgreSQL successfully!")
 
 except Exception as e:
     print("Connection failed:")
     print(e)
-
 
 class BaseModel(Model):
     class Meta:

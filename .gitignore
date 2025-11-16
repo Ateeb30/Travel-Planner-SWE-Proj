@@ -4,3 +4,15 @@ venv/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Node (Frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Frontend build
+travel-planner-frontend/dist/
+travel-planner-frontend/build/
+travel-planner-frontend/.vite/

@@ -8,10 +8,13 @@ import random
 
 fake = Faker()
 
-def generate_users(n=20):
+def generate_users(n=200):
     """Generate fake users"""
     users = []
-    for _ in range(n):
+    print(f"Generating {n} users...")
+    for i in range(n):
+        if i % 50 == 0:
+            print(f"  Progress: {i}/{n} users created")
         user = User.create(
             user_name=fake.user_name()[:20],
             password=fake.password(),
@@ -20,14 +23,17 @@ def generate_users(n=20):
             country=fake.country()
         )
         users.append(user)
-    print(f"Created {n} users")
+    print(f"✅ Created {n} users")
     return users
 
 
-def generate_destinations(n=15):
+def generate_destinations(n=500):
     """Generate fake destinations"""
     destinations = []
-    for _ in range(n):
+    print(f"Generating {n} destinations...")
+    for i in range(n):
+        if i % 100 == 0:
+            print(f"  Progress: {i}/{n} destinations created")
         destination = Destination.create(
             city=fake.city()[:20],
             country=fake.country()[:100],
@@ -38,12 +44,16 @@ def generate_destinations(n=15):
     return destinations
 
 
-def generate_food(destinations, n=30):
+def generate_food(destinations, n=1000):
     """Generate fake food/restaurant data"""
     cuisines = ['Italian', 'Chinese', 'Mexican', 'Japanese', 'Indian', 
-                'French', 'Thai', 'Mediterranean', 'Korean', 'Vietnamese']
+                'French', 'Thai', 'Mediterranean', 'Korean', 'Vietnamese',
+                'American', 'Greek', 'Turkish', 'Spanish', 'Lebanese']
     foods = []
-    for _ in range(n):
+    print(f"Generating {n} food entries...")
+    for i in range(n):
+        if i % 200 == 0:
+            print(f"  Progress: {i}/{n} food entries created")
         food = Food.create(
             name=f"{random.choice(cuisines)} {fake.company()}"[:100],
             location=fake.address()[:200],
@@ -55,13 +65,18 @@ def generate_food(destinations, n=30):
     return foods
 
 
-def generate_accommodations(destinations, n=25):
+def generate_accommodations(destinations, n=800):
     """Generate fake accommodations"""
     types = [1, 2, 3, 4, 5]  # Hotel, Hostel, Apartment, Resort, B&B
+    accommodation_types = ['Hotel', 'Inn', 'Lodge', 'Resort', 'Hostel', 
+                          'Villa', 'Apartment', 'Guesthouse']
     accommodations = []
-    for _ in range(n):
+    print(f"Generating {n} accommodations...")
+    for i in range(n):
+        if i % 200 == 0:
+            print(f"  Progress: {i}/{n} accommodations created")
         accommodation = Accommodation.create(
-            name=f"{fake.company()} {random.choice(['Hotel', 'Inn', 'Lodge', 'Resort'])}"[:100],
+            name=f"{fake.company()} {random.choice(accommodation_types)}"[:100],
             type=random.choice(types),
             rating=round(random.uniform(3.0, 5.0), 1),
             destination=random.choice(destinations)
@@ -71,18 +86,21 @@ def generate_accommodations(destinations, n=25):
     return accommodations
 
 
-def generate_transports(n=40):
+def generate_transports(n=300):
     """Generate fake transport options"""
     transport_types = [1, 2, 3, 4, 5]  # Flight, Train, Bus, Car, Ferry
     transports = []
-    for _ in range(n):
+    print(f"Generating {n} transport options...")
+    for i in range(n):
+        if i % 100 == 0:
+            print(f"  Progress: {i}/{n} transports created")
         transport = Transport.create(
             originCity=fake.city()[:100],
             originCountry=fake.country()[:100],
             destCity=fake.city()[:100],
             destCountry=fake.country()[:100],
             transportType=random.choice(transport_types),
-            cost=round(random.uniform(50, 1000), 2),
+            cost=round(random.uniform(50, 2000), 2),
             time=fake.time()
         )
         transports.append(transport)
@@ -90,15 +108,18 @@ def generate_transports(n=40):
     return transports
 
 
-def generate_trips(users, destinations, n=30):
+def generate_trips(users, destinations, n=400):
     """Generate fake trips for users"""
     trips = []
-    for _ in range(n):
+    print(f"Generating {n} trips...")
+    for i in range(n):
+        if i % 100 == 0:
+            print(f"  Progress: {i}/{n} trips created")
         start_date = fake.date_between(start_date='-1y', end_date='+6m')
         end_date = start_date + timedelta(days=random.randint(3, 21))
         
         trip = Trip.create(
-            maxBudget=random.randint(500, 5000),
+            maxBudget=random.randint(500, 10000),
             destination=random.choice(destinations),
             startDate=start_date,
             endDate=end_date,
@@ -109,13 +130,16 @@ def generate_trips(users, destinations, n=30):
     return trips
 
 
-def generate_suggestions(trips, foods, transports, destinations, accommodations, n=20):
+def generate_suggestions(trips, foods, transports, destinations, accommodations, n=600):
     """Generate fake suggestions"""
     suggestions = []
-    for _ in range(n):
+    print(f"Generating {n} suggestions...")
+    for i in range(n):
+        if i % 100 == 0:
+            print(f"  Progress: {i}/{n} suggestions created")
         suggestion = Suggestion.create(
             trip=random.choice(trips),
-            dailybudget=round(random.uniform(50, 300), 2),
+            dailybudget=round(random.uniform(50, 500), 2),
             food=random.choice(foods),
             transport=random.choice(transports),
             destination=random.choice(destinations),
@@ -126,11 +150,14 @@ def generate_suggestions(trips, foods, transports, destinations, accommodations,
     return suggestions
 
 
-def generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, n=15):
+def generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, n=300):
     """Generate fake filtered suggestions"""
     filtered = []
-    for _ in range(n):
-        daily = round(random.uniform(50, 300), 2)
+    print(f"Generating {n} filtered suggestions...")
+    for i in range(n):
+        if i % 100 == 0:
+            print(f"  Progress: {i}/{n} filtered suggestions created")
+        daily = round(random.uniform(50, 500), 2)
         duration = random.randint(3, 14)
         
         filtered_suggestion = FilteredSuggestion.create(
@@ -147,10 +174,13 @@ def generate_filtered_suggestions(trips, foods, transports, destinations, accomm
     return filtered
 
 
-def generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, n=10):
+def generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, n=150):
     """Generate fake final trips"""
     final_trips = []
-    for _ in range(n):
+    print(f"Generating {n} final trips...")
+    for i in range(n):
+        if i % 50 == 0:
+            print(f"  Progress: {i}/{n} final trips created")
         filtered_sugg = random.choice(filtered_suggestions)
         start_date = fake.date_between(start_date='-1y', end_date='+6m')
         end_date = start_date + timedelta(days=random.randint(3, 21))
@@ -162,7 +192,7 @@ def generate_final_trips(users, filtered_suggestions, destinations, transports, 
             accommodation=random.choice(accommodations),
             food=random.choice(foods),
             user_id=random.choice(users),
-            totalbudget=round(random.uniform(1000, 5000), 2),
+            totalbudget=round(random.uniform(1000, 10000), 2),
             startDate=start_date,
             endDate=end_date
         )
@@ -171,7 +201,7 @@ def generate_final_trips(users, filtered_suggestions, destinations, transports, 
     return final_trips
 
 
-def generate_admins(n=3):
+def generate_admins(n=5):
     """Generate fake admin users"""
     admins = []
     for i in range(n):
@@ -204,43 +234,55 @@ def clear_all_data():
 if __name__ == "__main__":
     try:
         # Optional: Clear existing data first
+        print("\n⚠️  This will delete ALL existing data and create new data.")
+        response = input("Continue? (yes/no): ").lower()
+        if response != 'yes':
+            print("Cancelled.")
+            exit()
+        
         clear_all_data()
         
-        print("\n🚀 Starting data generation...\n")
+        print("\n🚀 Starting LARGE data generation...")
+        print("This may take a few minutes...\n")
         
         # Generate data in order (respecting foreign key dependencies)
-        users = generate_users(20)
-        destinations = generate_destinations(15)
-        foods = generate_food(destinations, 30)
-        accommodations = generate_accommodations(destinations, 25)
-        transports = generate_transports(40)
-        trips = generate_trips(users, destinations, 30)
-        suggestions = generate_suggestions(trips, foods, transports, destinations, accommodations, 20)
-        filtered_suggestions = generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, 15)
-        final_trips = generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, 10)
-        admins = generate_admins(3)
+        users = generate_users(200)          # 200 users
+        destinations = generate_destinations(500)  # 500 destinations
+        foods = generate_food(destinations, 1000)  # 1000 restaurants
+        accommodations = generate_accommodations(destinations, 800)  # 800 accommodations
+        transports = generate_transports(300)  # 300 transport options
+        trips = generate_trips(users, destinations, 400)  # 400 trips
+        suggestions = generate_suggestions(trips, foods, transports, destinations, accommodations, 600)  # 600 suggestions
+        filtered_suggestions = generate_filtered_suggestions(trips, foods, transports, destinations, accommodations, 300)  # 300 filtered
+        final_trips = generate_final_trips(users, filtered_suggestions, destinations, transports, accommodations, foods, 150)  # 150 final trips
+        admins = generate_admins(5)  # 5 admins
         
-        print("\n🎉 All fake data generated successfully!")
+        print("\n" + "="*60)
+        print("🎉 ALL FAKE DATA GENERATED SUCCESSFULLY!")
+        print("="*60)
         print(f"""
-        📊 Summary:
-        ──────────
-        Users: {len(users)}
-        Destinations: {len(destinations)}
-        Food: {len(foods)}
-        Accommodations: {len(accommodations)}
-        Transports: {len(transports)}
-        Trips: {len(trips)}
-        Suggestions: {len(suggestions)}
-        Filtered Suggestions: {len(filtered_suggestions)}
-        Final Trips: {len(final_trips)}
-        Admins: {len(admins)}
+        📊 FINAL SUMMARY:
+        ─────────────────
+        👥 Users:                  {len(users):,}
+        📍 Destinations:            {len(destinations):,}
+        🍽️  Food/Restaurants:       {len(foods):,}
+        🏨 Accommodations:          {len(accommodations):,}
+        🚗 Transport Options:       {len(transports):,}
+        ✈️  Trips:                   {len(trips):,}
+        💡 Suggestions:             {len(suggestions):,}
+        🔍 Filtered Suggestions:    {len(filtered_suggestions):,}
+        ✅ Final Trips:             {len(final_trips):,}
+        👨‍💼 Admins:                  {len(admins):,}
+        ─────────────────
+        📦 TOTAL RECORDS:          {len(users) + len(destinations) + len(foods) + len(accommodations) + len(transports) + len(trips) + len(suggestions) + len(filtered_suggestions) + len(final_trips) + len(admins):,}
         """)
+        print("="*60)
         
     except Exception as e:
-        print(f"❌ Error generating data: {e}")
+        print(f"\n❌ Error generating data: {e}")
         import traceback
         traceback.print_exc()
     
     finally:
         db.close()
-        print("🔌 Database connection closed.")
+        print("\n🔌 Database connection closed.")
