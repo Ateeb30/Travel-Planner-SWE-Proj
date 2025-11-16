@@ -19,9 +19,8 @@ app = FastAPI(title="Travel Planner API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://*.vercel.app",
+        "https://travel-planner-swe-proj.vercel.app",
+        "http://localhost:5173"  
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -220,6 +219,9 @@ def root():
         "version": "1.0.0"
     }
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("api_main:app", host="0.0.0.0", port=8000, reload=True)
+
+app = app  # This ensures the app variable is exposed
+
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run("api_main:app", host="0.0.0.0", port=8000, reload=True)

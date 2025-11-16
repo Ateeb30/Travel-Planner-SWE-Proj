@@ -16,3 +16,4 @@ yarn-error.log*
 travel-planner-frontend/dist/
 travel-planner-frontend/build/
 travel-planner-frontend/.vite/
+.vercel
