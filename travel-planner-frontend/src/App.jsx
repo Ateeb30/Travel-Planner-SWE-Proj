@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Plane, MapPin, DollarSign, Calendar, Star, Filter, LogOut, User, History } from 'lucide-react';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.PROD 
+  ? '/api' 
+  : 'http://localhost:8000';
 
 // Utility function for API calls
 const api = {

@@ -18,12 +18,15 @@ app = FastAPI(title="Travel Planner API")
 # CORS Configuration - Allow React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vite and React default ports
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://*.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # ===== PYDANTIC MODELS =====
 
 class LoginRequest(BaseModel):

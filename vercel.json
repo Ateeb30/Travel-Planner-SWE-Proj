@@ -2,28 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "api_main.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "travel-planner-frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "travel-planner-frontend/dist"
-      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "api_main.py"
+      "dest": "api/index.py"
     },
     {
       "src": "/(.*)",
       "dest": "travel-planner-frontend/dist/$1"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url"
-  }
+  ]
 }
