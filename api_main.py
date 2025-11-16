@@ -15,17 +15,18 @@ import payment
 
 app = FastAPI(title="Travel Planner API")
 
-# CORS Configuration - Allow React frontend
+# CORS Configuration - MUST BE BEFORE ROUTES
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://travel-planner-swe-proj.vercel.app",
-        "http://localhost:5173"  
+        "http://localhost:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # ===== PYDANTIC MODELS =====
 
 class LoginRequest(BaseModel):
@@ -52,6 +53,16 @@ class FilterRequest(BaseModel):
     budget: Optional[float] = None
     destination: Optional[str] = None
     category: Optional[str] = None
+
+# ===== HEALTH CHECK (MUST BE FIRST) =====
+
+@app.get("/")
+def root():
+    """API health check"""
+    return {
+        "message": "Travel Planner API is running",
+        "version": "1.0.0"
+    }
 
 # ===== AUTH ENDPOINTS =====
 
@@ -209,19 +220,5 @@ def api_checkout(final_trip_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ===== HEALTH CHECK =====
-
-@app.get("/")
-def root():
-    """API health check"""
-    return {
-        "message": "Travel Planner API is running",
-        "version": "1.0.0"
-    }
-
-
-app = app  # This ensures the app variable is exposed
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("api_main:app", host="0.0.0.0", port=8000, reload=True)
+# For Vercel serverless deployment
+app = app
