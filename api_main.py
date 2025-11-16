@@ -218,7 +218,7 @@ def root():
     return {
         "message": "Travel Planner API is running",
         "version": "1.0.0"
-    }\
+    }
 
 if __name__ == "__main__":
     import uvicorn
