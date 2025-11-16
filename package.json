@@ -1,7 +1,0 @@
-{
-  "name": "travel-planner",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "cd travel-planner-frontend && npm install && npm run build"
-  }
-}
