@@ -1,8 +1,6 @@
-# api_main.py - FastAPI Application
-from fastapi.responses import JSONResponse
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi import FastAPI, HTTPException, Depends, Response
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
@@ -17,19 +15,37 @@ import payment
 
 app = FastAPI(title="Travel Planner API")
 
-# CORS Configuration - MUST BE BEFORE ROUTES
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://travel-planner-swe-proj.vercel.app",
-        "https://travelplannerbe-ateeb30-ateebs-projects-ecc731f4.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ],
+    allow_origins=["*"],  # Allow all origins for now
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add middleware to ensure CORS headers on ALL responses
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+# Handle OPTIONS requests explicitly
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str):
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true"
+        }
+    )
 
 # ===== PYDANTIC MODELS =====
 
