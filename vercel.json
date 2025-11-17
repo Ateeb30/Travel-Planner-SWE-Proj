@@ -6,21 +6,10 @@
       "use": "@vercel/python"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "api_main.py"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "https://travel-planner-swe-proj.vercel.app" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
-        { "key": "Access-Control-Allow-Credentials", "value": "true" }
-      ]
+      "src": "/(.*)",
+      "dest": "api_main.py"
     }
   ]
 }

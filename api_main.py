@@ -22,26 +22,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://travel-planner-swe-proj.vercel.app",
-        "http://localhost:5173"
+        "https://travelplannerbe-ateeb30-ateebs-projects-ecc731f4.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.options("/{path:path}")
-async def options_handler(path: str):
-    """Handle OPTIONS requests for CORS preflight"""
-    return JSONResponse(
-        content={"status": "ok"},
-        headers={
-            "Access-Control-Allow-Origin": "https://travel-planner-swe-proj.vercel.app",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Allow-Credentials": "true",
-        },
-        status_code=200
-    )
 
 # ===== PYDANTIC MODELS =====
 
