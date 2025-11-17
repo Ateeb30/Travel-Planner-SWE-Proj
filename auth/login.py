@@ -105,7 +105,7 @@ def login(email: str, password: str):
     finally:
         if not db.is_closed():
             db.close()
-
+# test
 # --- Test Function ---
 if __name__ == "__main__":
     # Use the exact same credentials from your successful signup
