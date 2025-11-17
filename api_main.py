@@ -15,10 +15,10 @@ import payment
 
 app = FastAPI(title="Travel Planner API")
 
-# CORS Configuration
+# Simple CORS - allow all
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
