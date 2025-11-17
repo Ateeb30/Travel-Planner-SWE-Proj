@@ -1,4 +1,5 @@
 # api_main.py - FastAPI Application
+from fastapi.responses import JSONResponse
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,13 +30,18 @@ app.add_middleware(
 )
 
 @app.options("/{path:path}")
-async def options_handler(path: str, response: Response):
+async def options_handler(path: str):
     """Handle OPTIONS requests for CORS preflight"""
-    response.headers["Access-Control-Allow-Origin"] = "https://travel-planner-swe-proj.vercel.app"
-    response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    return {"status": "ok"}
+    return JSONResponse(
+        content={"status": "ok"},
+        headers={
+            "Access-Control-Allow-Origin": "https://travel-planner-swe-proj.vercel.app",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true",
+        },
+        status_code=200
+    )
 
 # ===== PYDANTIC MODELS =====
 
