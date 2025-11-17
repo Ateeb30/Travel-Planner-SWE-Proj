@@ -13,6 +13,8 @@ const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+      mode: 'cors', // Add this
+      credentials: 'include' // Add this
     });
     if (!response.ok) {
       const error = await response.json();

@@ -241,5 +241,14 @@ def api_checkout(final_trip_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # For Vercel serverless deployment
-app = app
+# app = app
 # --- IGNORE ---
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True
+    )
