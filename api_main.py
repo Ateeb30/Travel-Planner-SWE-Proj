@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+# api_main.py - FastAPI Application
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
@@ -15,37 +15,14 @@ import payment
 
 app = FastAPI(title="Travel Planner API")
 
-# Simple CORS - allow all
+# CORS Configuration - Allow React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add middleware to ensure CORS headers on ALL responses
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    return response
-
-# Handle OPTIONS requests explicitly
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str):
-    return JSONResponse(
-        content={},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Allow-Credentials": "true"
-        }
-    )
 
 # ===== PYDANTIC MODELS =====
 
@@ -74,7 +51,7 @@ class FilterRequest(BaseModel):
     destination: Optional[str] = None
     category: Optional[str] = None
 
-# ===== HEALTH CHECK (MUST BE FIRST) =====
+# ===== HEALTH CHECK =====
 
 @app.get("/")
 def root():
@@ -240,15 +217,6 @@ def api_checkout(final_trip_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# For Vercel serverless deployment
-# app = app
-# --- IGNORE ---
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True
-    )
+    uvicorn.run("api_main:app", host="0.0.0.0", port=8000, reload=True)

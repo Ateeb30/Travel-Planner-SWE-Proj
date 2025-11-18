@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plane, MapPin, DollarSign, Calendar, Star, Filter, LogOut, User, History } from 'lucide-react';
 
-// API Configuration - UPDATED
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://travelplannerbe-ateeb30-ateebs-projects-ecc731f4.vercel.app' 
-  : 'http://localhost:8000';
+// API Configuration
+const API_BASE_URL = 'http://localhost:8000';
 
 // Utility function for API calls
 const api = {
@@ -13,8 +11,6 @@ const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-      mode: 'cors', // Add this
-      credentials: 'include' // Add this
     });
     if (!response.ok) {
       const error = await response.json();
@@ -290,7 +286,7 @@ function MainApp({ user, token, onLogout, currentView, setCurrentView }) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentView === 'main' && <PlanningView user={user} token={token} />}
+        {currentView === 'main' && <PlanningView user={user} token={token} setCurrentView={setCurrentView} />}
         {currentView === 'trips' && <TripsView user={user} token={token} />}
       </div>
     </div>
@@ -298,7 +294,7 @@ function MainApp({ user, token, onLogout, currentView, setCurrentView }) {
 }
 
 // Planning View
-function PlanningView({ user, token }) {
+function PlanningView({ user, token, setCurrentView }) {
   const [step, setStep] = useState('trip-details');
   const [tripData, setTripData] = useState({
     maxBudget: '',
@@ -312,6 +308,7 @@ function PlanningView({ user, token }) {
   const [filters, setFilters] = useState({ budget: '', destination: '', category: '' });
   const [loading, setLoading] = useState(false);
   const [currentTrip, setCurrentTrip] = useState(null);
+  const [bookedTrips, setBookedTrips] = useState([]);
 
   const handleCreateTrip = async (e) => {
     e.preventDefault();
@@ -343,6 +340,58 @@ function PlanningView({ user, token }) {
       alert('Error fetching suggestions: ' + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBookTrip = async (destination) => {
+    if (!currentTrip) {
+      alert('Please create a trip first!');
+      setStep('trip-details');
+      return;
+    }
+
+    const confirmBook = window.confirm(
+      `Book this trip?\n\n` +
+      `Destination: ${destination.name}, ${destination.country}\n` +
+      `Cost: $${destination.cost.toFixed(2)}\n` +
+      `Rating: ${destination.rating}⭐\n` +
+      `Category: ${destination.category}\n\n` +
+      `Dates: ${tripData.startDate} to ${tripData.endDate}`
+    );
+
+    if (!confirmBook) return;
+
+    try {
+      // Store the booked trip in local state
+      const bookedTrip = {
+        id: Date.now(),
+        destination: `${destination.name}, ${destination.country}`,
+        totalbudget: destination.cost,
+        startDate: tripData.startDate,
+        endDate: tripData.endDate,
+        category: destination.category,
+        rating: destination.rating
+      };
+
+      // Add to booked trips
+      const existingTrips = JSON.parse(localStorage.getItem(`trips_${user.user_id}`) || '[]');
+      existingTrips.push(bookedTrip);
+      localStorage.setItem(`trips_${user.user_id}`, JSON.stringify(existingTrips));
+
+      // Show success message
+      alert(
+        `🎉 Trip Booked Successfully!\n\n` +
+        `Destination: ${destination.name}, ${destination.country}\n` +
+        `Cost: $${destination.cost.toFixed(2)}\n` +
+        `Rating: ${destination.rating}⭐\n` +
+        `Dates: ${tripData.startDate} to ${tripData.endDate}\n\n` +
+        `View your trip in "My Trips"!`
+      );
+
+      // Redirect to trips view
+      setCurrentView('trips');
+    } catch (error) {
+      alert('Booking failed: ' + error.message);
     }
   };
 
@@ -536,7 +585,7 @@ function PlanningView({ user, token }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDestinations.map((dest, idx) => (
-              <DestinationCard key={idx} destination={dest} showBooking />
+              <DestinationCard key={idx} destination={dest} showBooking onBook={handleBookTrip} />
             ))}
           </div>
         )}
@@ -548,7 +597,17 @@ function PlanningView({ user, token }) {
 }
 
 // Destination Card Component
-function DestinationCard({ destination, showBooking }) {
+function DestinationCard({ destination, showBooking, onBook }) {
+  const [booking, setBooking] = useState(false);
+
+  const handleBook = async () => {
+    if (onBook) {
+      setBooking(true);
+      await onBook(destination);
+      setBooking(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
       <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500"></div>
@@ -576,8 +635,12 @@ function DestinationCard({ destination, showBooking }) {
         </span>
         
         {showBooking && (
-          <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-            Book This Trip
+          <button 
+            onClick={handleBook}
+            disabled={booking}
+            className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {booking ? 'Booking...' : 'Book This Trip'}
           </button>
         )}
       </div>
@@ -596,10 +659,24 @@ function TripsView({ user, token }) {
 
   const fetchTrips = async () => {
     try {
-      const result = await api.get(`/trips/${user.user_id}`, token);
-      setTrips(result.trips || []);
+      // Get trips from localStorage
+      const localTrips = JSON.parse(localStorage.getItem(`trips_${user.user_id}`) || '[]');
+      
+      // Try to get trips from backend
+      try {
+        const result = await api.get(`/trips/${user.user_id}`, null);
+        const backendTrips = result.trips || [];
+        
+        // Combine both sources
+        const allTrips = [...localTrips, ...backendTrips];
+        setTrips(allTrips);
+      } catch (error) {
+        // If backend fails, just use local trips
+        setTrips(localTrips);
+      }
     } catch (error) {
       console.error('Error fetching trips:', error);
+      setTrips([]);
     } finally {
       setLoading(false);
     }
@@ -622,8 +699,15 @@ function TripsView({ user, token }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trips.map((trip, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-3">{trip.destination}</h3>
+            <div key={idx} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-xl font-bold text-gray-800">{trip.destination}</h3>
+                {trip.category && (
+                  <span className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium">
+                    {trip.category}
+                  </span>
+                )}
+              </div>
               <div className="space-y-2 text-gray-600">
                 <p className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -633,6 +717,12 @@ function TripsView({ user, token }) {
                   <DollarSign className="w-4 h-4" />
                   Total: ${trip.totalbudget.toFixed(2)}
                 </p>
+                {trip.rating && (
+                  <p className="flex items-center gap-2">
+                    <Star className="w-4 h-4 fill-current text-yellow-500" />
+                    Rating: {trip.rating}/5
+                  </p>
+                )}
               </div>
             </div>
           ))}
